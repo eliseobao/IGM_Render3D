@@ -30,11 +30,19 @@ h = 300
 
 # MOD: List of light sources, where each light source is represented by its position and color
 LIGHTS = [
-    {"position": np.array([5.0, 5.0, -10.0]), "color": np.array([1.0, 1.0, 1.0])}, # White
-    {"position": np.array([-10.0, 5.0, -10.0]), "color": np.array([0.8, 0.2, 0.2])}, # Reddish
-    {"position": np.array([50, 5.0, -10.0]), "color": np.array([0.2, 0.8, 0.2])}, # Greenish
+    {
+        "position": np.array([5.0, 5.0, -10.0]),
+        "color": np.array([1.0, 1.0, 1.0]),
+    },  # White
+    {
+        "position": np.array([-10.0, 5.0, -10.0]),
+        "color": np.array([0.8, 0.2, 0.2]),
+    },  # Reddish
+    {
+        "position": np.array([50, 5.0, -10.0]),
+        "color": np.array([0.2, 0.8, 0.2]),
+    },  # Greenish
 ]
-
 
 
 def normalize(x):
@@ -75,11 +83,38 @@ def intersect_sphere(O, D, S, R):
     return np.inf
 
 
+def intersect_triangle(O, D, V0, V1, V2):
+    # Return the distance from O to the intersection of the ray (O, D) with the
+    # triangle (V0, V1, V2), or +inf if there is no intersection.
+    # O, V0, V1, V2, and D are 3D points.
+    edge1 = V1 - V0
+    edge2 = V2 - V0
+    pvec = np.cross(D, edge2)
+    det = np.dot(edge1, pvec)
+    if np.abs(det) < 1e-6:
+        return np.inf
+    inv_det = 1.0 / det
+    tvec = O - V0
+    u = np.dot(tvec, pvec) * inv_det
+    if u < 0 or u > 1:
+        return np.inf
+    qvec = np.cross(tvec, edge1)
+    v = np.dot(D, qvec) * inv_det
+    if v < 0 or u + v > 1:
+        return np.inf
+    t = np.dot(edge2, qvec) * inv_det
+    if t > 1e-6:
+        return t
+    return np.inf
+
+
 def intersect(O, D, obj):
     if obj["type"] == "plane":
         return intersect_plane(O, D, obj["position"], obj["normal"])
     elif obj["type"] == "sphere":
         return intersect_sphere(O, D, obj["position"], obj["radius"])
+    elif obj["type"] == "triangle":
+        return intersect_triangle(O, D, obj["V0"], obj["V1"], obj["V2"])
 
 
 def get_normal(obj, M):
@@ -88,6 +123,8 @@ def get_normal(obj, M):
         N = normalize(M - obj["position"])
     elif obj["type"] == "plane":
         N = obj["normal"]
+    elif obj["type"] == "triangle":
+        N = np.cross(obj["V1"] - obj["V0"], obj["V2"] - obj["V0"])
     return N
 
 
@@ -115,7 +152,7 @@ def trace_ray(rayO, rayD):
     # Find properties of the object.
     N = get_normal(obj, M)
     color = get_color(obj, M)
-    # MOD: Modify the shading calculations to iterate over all LIGHTS and 
+    # MOD: Modify the shading calculations to iterate over all LIGHTS and
     # calculate the components for each light source
     col_ray = ambient
     for light in LIGHTS:
@@ -164,6 +201,17 @@ def add_plane(position, normal):
     )
 
 
+def add_triangle(V0, V1, V2, color):
+    return dict(
+        type="triangle",
+        V0=np.array(V0),
+        V1=np.array(V1),
+        V2=np.array(V2),
+        color=np.array(color),
+        reflection=0.5,
+    )
+
+
 # List of objects.
 color_plane0 = 1.0 * np.ones(3)
 color_plane1 = 0.0 * np.ones(3)
@@ -172,6 +220,7 @@ scene = [
     add_sphere([-0.75, 0.1, 2.25], 0.6, [0.5, 0.223, 0.5]),
     add_sphere([-2.75, 0.1, 3.5], 0.6, [1.0, 0.572, 0.184]),
     add_plane([0.0, -0.5, 0.0], [0.0, 1.0, 0.0]),
+    add_triangle([-0.5, 0.0, 1.5], [0.0, 0.6, 1.0], [0.5, 0.0, 1.0], [0.0, 1.0, 0.0]),
 ]
 
 # Default light and material parameters.
