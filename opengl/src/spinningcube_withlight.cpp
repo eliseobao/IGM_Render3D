@@ -246,9 +246,9 @@ int main()
   view_location = glGetUniformLocation(shader_program, "view");
   proj_location = glGetUniformLocation(shader_program, "proj_matrix");
 
-  camera_position_location = glGetUniformLocation(shader_program, "view_pos");
-
   normal_to_w_location = glGetUniformLocation(shader_program, "normal_matrix");
+
+  camera_position_location = glGetUniformLocation(shader_program, "view_pos");
 
   light_ambient_location = glGetUniformLocation(shader_program, "light.ambient");
   light_diffuse_location = glGetUniformLocation(shader_program, "light.diffuse");
@@ -291,8 +291,6 @@ void render(double currentTime)
 
   glm::mat4 model_matrix, view_matrix, proj_matrix;
   glm::mat3 normal_matrix;
-
-  model_matrix = glm::mat4(1.f);
 
   // View matrix
   view_matrix = glm::lookAt(camera_pos,                   // pos
