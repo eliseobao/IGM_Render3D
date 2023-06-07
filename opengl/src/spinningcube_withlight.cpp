@@ -210,7 +210,24 @@ int main()
 
       -0.25f, 0.25f, -0.25f, // 0
       -0.25f, 0.25f, 0.25f,  // 7
-      0.25f, 0.25f, -0.25f   // 3
+      0.25f, 0.25f, -0.25f,   // 3
+
+      // Pyramid
+      0.85f,  0.65f,  0.25f, // Top vertex
+      0.45f, -0.15f,  0.65f, // Bottom-left vertex
+      1.25f, -0.15f,  0.65f, // Bottom-right vertex
+
+      0.85f,  0.65f,  0.25f, // Top vertex
+      1.25f, -0.15f,  0.65f, // Bottom-right vertex
+      0.85f, -0.15f, -0.15f, // Bottom-front vertex
+
+      0.85f,  0.65f,  0.25f, // Top vertex
+      0.85f, -0.15f, -0.15f, // Bottom-front vertex
+      0.45f, -0.15f,  0.65f, // Bottom-left vertex
+
+      0.85f, -0.15f, -0.15f, // Bottom-front vertex
+      1.25f, -0.15f,  0.65f, // Bottom-right vertex
+      0.45f, -0.15f,  0.65f  // Bottom-left vertex
   };
 
   // Vertex Buffer Object (for vertex coordinates)
@@ -336,7 +353,11 @@ void render(double currentTime)
   glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
   glUniform1f(material_shininess_location, material_shininess);
 
+  // Render the cube
   glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  // Render the pyramid
+  glDrawArrays(GL_TRIANGLES, 36, 12);
 }
 
 void processInput(GLFWwindow *window)
