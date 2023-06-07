@@ -1,10 +1,8 @@
-todo: spinningcube_withlight
+compile: src/spinningcube_withlight.cpp src/textfile.c
+	gcc $^ -lGL -lGLEW -lglfw -lm -o spinningcube_withlight
 
-spinningcube_withlight: spinningcube_withlight.cpp textfile.c
-	gcc $^ -lGL -lGLEW -lglfw -lm -o $@
+run: compile
+	./spinningcube_withlight
 
 clean:
-	rm -f *.o *~
-
-cleanall: clean
 	rm -f spinningcube_withlight

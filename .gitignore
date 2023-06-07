@@ -1,3 +1,6 @@
+.vscode
+spinningcube_withlight
+
 # Prerequisites
 *.d
 
@@ -30,5 +33,3 @@
 *.exe
 *.out
 *.app
-
-spinningcube_withlight

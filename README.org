@@ -1,8 +1,7 @@
 * Práctica OpenGL: Iluminación con Phong
 
   A partir do esqueleto de código do arquivo
-  =spinningcube_withlight_SKEL.cpp= que podedes atopar neste repositorio
-  (rama /practicaOpenGL/) tedes que implementar unha iluminación
+  =spinningcube_withlight_SKEL.cpp=, implementar unha iluminación
   simple con Phong sobre un cubo 3D en movemento. A implementación ten
   que funcionar para cámara, punto(s) de luz e cubo 3D en posicións
   arbitrarias.
