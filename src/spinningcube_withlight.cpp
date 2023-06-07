@@ -11,6 +11,7 @@
 #include <glm/mat4x4.hpp>               // glm::mat4
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::perspective
 #include <glm/gtc/type_ptr.hpp>
+#include "glm/ext.hpp" // glm::inverseTranspose
 
 #include "textfile_ALT.h"
 
@@ -25,7 +26,8 @@ GLuint shader_program = 0; // shader program to set render pipeline
 GLuint vao = 0;
 
 // Uniforms for transformation matrices                                                                                                                                                                                                       // Vertext Array Object to set input data
-GLint model_location, view_location, proj_location, view_pos_location;
+GLint model_location, view_location, proj_location, normal_to_w_location;
+GLint camera_position_location;
 GLint material_ambient_location, material_diffuse_location, material_specular_location, material_shininess_location;
 GLint light_position_location, light_ambient_location, light_diffuse_location, light_specular_location;
 
@@ -244,7 +246,9 @@ int main()
   view_location = glGetUniformLocation(shader_program, "view");
   proj_location = glGetUniformLocation(shader_program, "proj_matrix");
 
-  view_pos_location = glGetUniformLocation(shader_program, "view_pos");
+  camera_position_location = glGetUniformLocation(shader_program, "view_pos");
+
+  normal_to_w_location = glGetUniformLocation(shader_program, "normal_matrix");
 
   light_ambient_location = glGetUniformLocation(shader_program, "light.ambient");
   light_diffuse_location = glGetUniformLocation(shader_program, "light.diffuse");
@@ -286,8 +290,43 @@ void render(double currentTime)
   glBindVertexArray(vao);
 
   glm::mat4 model_matrix, view_matrix, proj_matrix;
+  glm::mat3 normal_matrix;
 
-  glUniform3fv(view_pos_location, 1, glm::value_ptr(camera_pos));
+  model_matrix = glm::mat4(1.f);
+
+  // View matrix
+  view_matrix = glm::lookAt(camera_pos,                   // pos
+                            glm::vec3(0.0f, 0.0f, 0.0f),  // target
+                            glm::vec3(0.0f, 1.0f, 0.0f)); // up
+  glUniformMatrix4fv(view_location, 1, GL_FALSE, glm::value_ptr(view_matrix));
+
+  // Moving cube
+  model_matrix = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.0f, -4.0f));
+  model_matrix = glm::translate(model_matrix,
+                                glm::vec3(sinf(2.1f * f) * 0.5f,
+                                          cosf(1.7f * f) * 0.5f,
+                                          sinf(1.3f * f) * cosf(1.5f * f) * 2.0f));
+
+  model_matrix = glm::rotate(model_matrix,
+                             glm::radians((float)currentTime * 45.0f),
+                             glm::vec3(0.0f, 1.0f, 0.0f));
+  model_matrix = glm::rotate(model_matrix,
+                             glm::radians((float)currentTime * 81.0f),
+                             glm::vec3(1.0f, 0.0f, 0.0f));
+  glUniformMatrix4fv(model_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+  // Projection
+  proj_matrix = glm::perspective(glm::radians(50.0f),
+                                 (float)gl_width / (float)gl_height,
+                                 0.1f, 1000.0f);
+  glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+  // Normal matrix: normal vectors to world coordinates
+
+  normal_matrix = glm::inverseTranspose(glm::mat3(model_matrix));
+  glUniformMatrix3fv(normal_to_w_location, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+  glUniform3fv(camera_position_location, 1, glm::value_ptr(camera_pos));
 
   glUniform3fv(light_ambient_location, 1, glm::value_ptr(light_ambient));
   glUniform3fv(light_diffuse_location, 1, glm::value_ptr(light_diffuse));
@@ -298,37 +337,6 @@ void render(double currentTime)
   glUniform3fv(material_diffuse_location, 1, glm::value_ptr(material_diffuse));
   glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
   glUniform1f(material_shininess_location, material_shininess);
-
-  // View matrix
-  view_matrix = glm::lookAt(camera_pos,                   // pos
-                            glm::vec3(0.0f, 0.0f, 0.0f),  // target
-                            glm::vec3(0.0f, 1.0f, 0.0f)); // up
-  glUniformMatrix4fv(view_location, 1, GL_FALSE, glm::value_ptr(view_matrix));
-
-  // Model matrix
-  model_matrix = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.0f, -4.0f));
-
-  model_matrix = glm::translate(model_matrix,
-                                glm::vec3(sinf(2.1f * f) * 0.5f,
-                                          cosf(1.7f * f) * 0.5f,
-                                          sinf(1.3f * f) * cosf(1.5f * f) * 2.0f));
-
-  model_matrix = glm::rotate(model_matrix,
-                             glm::radians((float)currentTime * 45.0f),
-                             glm::vec3(0.0f, 1.0f, 0.0f));
-
-  model_matrix = glm::rotate(model_matrix,
-                             glm::radians((float)currentTime * 81.0f),
-                             glm::vec3(1.0f, 0.0f, 0.0f));
-
-  glUniformMatrix4fv(model_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
-
-  // Projection matrix
-  proj_matrix = glm::perspective(glm::radians(50.0f),
-                                 (float)gl_width / (float)gl_height,
-                                 0.1f, 1000.0f);
-
-  glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
 
   glDrawArrays(GL_TRIANGLES, 0, 36);
 }
