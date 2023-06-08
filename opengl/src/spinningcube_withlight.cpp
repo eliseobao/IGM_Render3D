@@ -36,7 +36,7 @@ const char *vertexFileName = "src/spinningcube_withlight_vs.glsl";
 const char *fragmentFileName = "src/spinningcube_withlight_fs.glsl";
 
 // Camera
-glm::vec3 camera_pos(0.0f, 0.0f, 3.0f);
+glm::vec3 camera_pos(0.0f, 0.0f, 1.5f);
 
 // Lighting
 glm::vec3 light_pos(1.2f, 1.0f, 2.0f);
@@ -211,6 +211,23 @@ int main()
       -0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, // 0
       -0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f,  // 7
       0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f,  // 3
+
+      // Pyramid
+      0.85f,  0.65f,  0.25f, 0.0f, 0.45f, 0.89f, // Top vertex
+      0.45f, -0.15f,  0.65f, 0.0f, 0.45f, 0.89f, // Bottom-left vertex
+      1.25f, -0.15f,  0.65f, 0.0f, 0.45f, 0.89f, // Bottom-right vertex
+
+      0.85f,  0.65f,  0.25f, 0.87f, 0.22f, -0.44f, // Top vertex
+      1.25f, -0.15f,  0.65f, 0.87f, 0.22f, -0.44f, // Bottom-right vertex
+      0.85f, -0.15f, -0.15f, 0.87f, 0.22f, -0.44f, // Bottom-front vertex
+
+      0.85f,  0.65f,  0.25f, -0.87f, 0.22f, -0.44f, // Top vertex
+      0.85f, -0.15f, -0.15f, -0.87f, 0.22f, -0.44f, // Bottom-front vertex
+      0.45f, -0.15f,  0.65f, -0.87f, 0.22f, -0.44f, // Bottom-left vertex
+
+      0.85f, -0.15f, -0.15f, 0.0f, -1.0f, 0.0f, // Bottom-front vertex
+      1.25f, -0.15f,  0.65f, 0.0f, -1.0f, 0.0f, // Bottom-right vertex
+      0.45f, -0.15f,  0.65f, 0.0f, -1.0f, 0.0f,  // Bottom-left vertex
   };
 
   // Vertex Buffer Object (for vertex coordinates)
@@ -336,8 +353,11 @@ void render(double currentTime)
   glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
   glUniform1f(material_shininess_location, material_shininess);
 
+  // Render the cube
   glDrawArrays(GL_TRIANGLES, 0, 36);
-}
+
+  // Render the pyramid
+  glDrawArrays(GL_TRIANGLES, 36, 12);}
 
 void processInput(GLFWwindow *window)
 {
