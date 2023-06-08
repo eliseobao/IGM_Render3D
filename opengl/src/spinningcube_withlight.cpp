@@ -30,18 +30,16 @@ GLint model_location, view_location, proj_location, normal_to_w_location;
 GLint camera_position_location;
 GLint material_ambient_location, material_diffuse_location, material_specular_location, material_shininess_location;
 GLint light_position_location, light_ambient_location, light_diffuse_location, light_specular_location;
-GLint light_position_location_2, light_ambient_location_2, light_diffuse_location_2, light_specular_location_2;
 
 // Shader names
 const char *vertexFileName = "src/spinningcube_withlight_vs.glsl";
 const char *fragmentFileName = "src/spinningcube_withlight_fs.glsl";
 
 // Camera
-glm::vec3 camera_pos(0.0f, 0.0f, 1.0f);
+glm::vec3 camera_pos(0.0f, 0.0f, 3.0f);
 
 // Lighting
-glm::vec3 light_pos(1.5f, 0.8f, 2.0f);
-glm::vec3 light_pos_2(-1.5f, 0.8f, 2.0f);
+glm::vec3 light_pos(1.2f, 1.0f, 2.0f);
 glm::vec3 light_ambient(0.2f, 0.2f, 0.2f);
 glm::vec3 light_diffuse(0.5f, 0.5f, 0.5f);
 glm::vec3 light_specular(1.0f, 1.0f, 1.0f);
@@ -166,70 +164,53 @@ int main()
   //       6        5
   //
   const GLfloat vertex_positions[] = {
-      -0.25f, -0.25f, -0.25f, // 1
-      -0.25f, 0.25f, -0.25f,  // 0
-      0.25f, -0.25f, -0.25f,  // 2
+      -0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f, // 1
+      -0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f,  // 0
+      0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f,  // 2
 
-      0.25f, 0.25f, -0.25f,  // 3
-      0.25f, -0.25f, -0.25f, // 2
-      -0.25f, 0.25f, -0.25f, // 0
+      0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f,  // 3
+      0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f, // 2
+      -0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f, // 0
 
-      0.25f, -0.25f, -0.25f, // 2
-      0.25f, 0.25f, -0.25f,  // 3
-      0.25f, -0.25f, 0.25f,  // 5
+      0.25f, -0.25f, -0.25f, 1.0f, 0.0f, 0.0f, // 2
+      0.25f, 0.25f, -0.25f, 1.0f, 0.0f, 0.0f,  // 3
+      0.25f, -0.25f, 0.25f, 1.0f, 0.0f, 0.0f,  // 5
 
-      0.25f, 0.25f, 0.25f,  // 4
-      0.25f, -0.25f, 0.25f, // 5
-      0.25f, 0.25f, -0.25f, // 3
+      0.25f, 0.25f, 0.25f, 1.0f, 0.0f, 0.0f,  // 4
+      0.25f, -0.25f, 0.25f, 1.0f, 0.0f, 0.0f, // 5
+      0.25f, 0.25f, -0.25f, 1.0f, 0.0f, 0.0f, // 3
 
-      0.25f, -0.25f, 0.25f,  // 5
-      0.25f, 0.25f, 0.25f,   // 4
-      -0.25f, -0.25f, 0.25f, // 6
+      0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f,  // 5
+      0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f,   // 4
+      -0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f, // 6
 
-      -0.25f, 0.25f, 0.25f,  // 7
-      -0.25f, -0.25f, 0.25f, // 6
-      0.25f, 0.25f, 0.25f,   // 4
+      -0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f,  // 7
+      -0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f, // 6
+      0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f,   // 4
 
-      -0.25f, -0.25f, 0.25f,  // 6
-      -0.25f, 0.25f, 0.25f,   // 7
-      -0.25f, -0.25f, -0.25f, // 1
+      -0.25f, -0.25f, 0.25f, -1.0f, 0.0f, 0.0f,  // 6
+      -0.25f, 0.25f, 0.25f, -1.0f, 0.0f, 0.0f,   // 7
+      -0.25f, -0.25f, -0.25f, -1.0f, 0.0f, 0.0f, // 1
 
-      -0.25f, 0.25f, -0.25f,  // 0
-      -0.25f, -0.25f, -0.25f, // 1
-      -0.25f, 0.25f, 0.25f,   // 7
+      -0.25f, 0.25f, -0.25f, -1.0f, 0.0f, 0.0f,  // 0
+      -0.25f, -0.25f, -0.25f, -1.0f, 0.0f, 0.0f, // 1
+      -0.25f, 0.25f, 0.25f, -1.0f, 0.0f, 0.0f,   // 7
 
-      0.25f, -0.25f, -0.25f,  // 2
-      0.25f, -0.25f, 0.25f,   // 5
-      -0.25f, -0.25f, -0.25f, // 1
+      0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f,  // 2
+      0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f,   // 5
+      -0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f, // 1
 
-      -0.25f, -0.25f, 0.25f,  // 6
-      -0.25f, -0.25f, -0.25f, // 1
-      0.25f, -0.25f, 0.25f,   // 5
+      -0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f,  // 6
+      -0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f, // 1
+      0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f,   // 5
 
-      0.25f, 0.25f, 0.25f,  // 4
-      0.25f, 0.25f, -0.25f, // 3
-      -0.25f, 0.25f, 0.25f, // 7
+      0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f,  // 4
+      0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, // 3
+      -0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f, // 7
 
-      -0.25f, 0.25f, -0.25f, // 0
-      -0.25f, 0.25f, 0.25f,  // 7
-      0.25f, 0.25f, -0.25f,   // 3
-
-      // Pyramid
-      0.85f,  0.65f,  0.25f, // Top vertex
-      0.45f, -0.15f,  0.65f, // Bottom-left vertex
-      1.25f, -0.15f,  0.65f, // Bottom-right vertex
-
-      0.85f,  0.65f,  0.25f, // Top vertex
-      1.25f, -0.15f,  0.65f, // Bottom-right vertex
-      0.85f, -0.15f, -0.15f, // Bottom-front vertex
-
-      0.85f,  0.65f,  0.25f, // Top vertex
-      0.85f, -0.15f, -0.15f, // Bottom-front vertex
-      0.45f, -0.15f,  0.65f, // Bottom-left vertex
-
-      0.85f, -0.15f, -0.15f, // Bottom-front vertex
-      1.25f, -0.15f,  0.65f, // Bottom-right vertex
-      0.45f, -0.15f,  0.65f  // Bottom-left vertex
+      -0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, // 0
+      -0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f,  // 7
+      0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f,  // 3
   };
 
   // Vertex Buffer Object (for vertex coordinates)
@@ -240,11 +221,11 @@ int main()
 
   // Vertex attributes
   // 0: vertex position (x, y, z)
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,  6 * sizeof(float), NULL);
   glEnableVertexAttribArray(0);
 
   // 1: vertex normals (x, y, z)
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,  6 * sizeof(float), (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
   // Unbind vbo (it was conveniently registered by VertexAttribPointer)
@@ -273,11 +254,6 @@ int main()
   light_diffuse_location = glGetUniformLocation(shader_program, "light.diffuse");
   light_specular_location = glGetUniformLocation(shader_program, "light.specular");
   light_position_location = glGetUniformLocation(shader_program, "light.position");
-
-  light_ambient_location_2 = glGetUniformLocation(shader_program, "light.ambient");
-  light_diffuse_location_2 = glGetUniformLocation(shader_program, "light.diffuse");
-  light_specular_location_2 = glGetUniformLocation(shader_program, "light.specular");
-  light_position_location_2 = glGetUniformLocation(shader_program, "light.position");
 
   material_ambient_location = glGetUniformLocation(shader_program, "material.ambient");
   material_diffuse_location = glGetUniformLocation(shader_program, "material.diffuse");
@@ -355,21 +331,12 @@ void render(double currentTime)
   glUniform3fv(light_specular_location, 1, glm::value_ptr(light_specular));
   glUniform3fv(light_position_location, 1, glm::value_ptr(light_pos));
 
-  glUniform3fv(light_ambient_location_2, 1, glm::value_ptr(light_ambient));
-  glUniform3fv(light_diffuse_location_2, 1, glm::value_ptr(light_diffuse));
-  glUniform3fv(light_specular_location_2, 1, glm::value_ptr(light_specular));
-  glUniform3fv(light_position_location_2, 1, glm::value_ptr(light_pos_2));
-
   glUniform3fv(material_ambient_location, 1, glm::value_ptr(material_ambient));
   glUniform3fv(material_diffuse_location, 1, glm::value_ptr(material_diffuse));
   glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
   glUniform1f(material_shininess_location, material_shininess);
 
-  // Render the cube
   glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  // Render the pyramid
-  glDrawArrays(GL_TRIANGLES, 36, 12);
 }
 
 void processInput(GLFWwindow *window)
