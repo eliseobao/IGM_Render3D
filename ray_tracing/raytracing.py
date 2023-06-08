@@ -231,13 +231,13 @@ specular_k = 50
 
 depth_max = 5  # Maximum number of light reflections.
 col = np.zeros(3)  # Current color.
-O = np.array([0.0, 0.35, -1.0])  # Camera.
-Q = np.array([0.0, 0.0, 0.0])  # Camera pointing to.
+O = np.array([0.0, 15.0, 0.0])  # Camera.
+Q = np.array([0.0, 11.0, 0.0])  # Camera pointing to.
 img = np.zeros((h, w, 3))
 
 r = float(w) / h
 # Screen coordinates: x0, y0, x1, y1.
-S = (-1.0, -1.0 / r + 0.25, 1.0, 1.0 / r + 0.25)
+S = (-r, -r, r, r)
 
 # Loop through all pixels.
 for i, x in enumerate(np.linspace(S[0], S[2], w)):
@@ -245,7 +245,7 @@ for i, x in enumerate(np.linspace(S[0], S[2], w)):
         print(i / float(w) * 100, "%")
     for j, y in enumerate(np.linspace(S[1], S[3], h)):
         col[:] = 0
-        Q[:2] = (x, y)
+        Q[0], Q[2] = x, y  # Update camera pointing direction.
         D = normalize(Q - O)
         depth = 0
         rayO, rayD = O, D
