@@ -29,25 +29,32 @@ GLuint vao = 0;
 GLint model_location, view_location, proj_location, normal_to_w_location;
 GLint camera_position_location;
 GLint material_ambient_location, material_diffuse_location, material_specular_location, material_shininess_location;
-GLint light_position_location, light_ambient_location, light_diffuse_location, light_specular_location;
+GLint light_position_location_b, light_ambient_location_b, light_diffuse_location_b, light_specular_location_b;
+GLint light_position_location_r, light_ambient_location_r, light_diffuse_location_r, light_specular_location_r;
 
 // Shader names
 const char *vertexFileName = "src/spinningcube_withlight_vs.glsl";
 const char *fragmentFileName = "src/spinningcube_withlight_fs.glsl";
 
 // Camera
-glm::vec3 camera_pos(0.0f, 0.0f, 1.5f);
+glm::vec3 camera_pos(0.0f, 0.0f, 3.0f);
 
-// Lighting
-glm::vec3 light_pos(1.2f, 1.0f, 2.0f);
-glm::vec3 light_ambient(0.2f, 0.2f, 0.2f);
-glm::vec3 light_diffuse(0.5f, 0.5f, 0.5f);
-glm::vec3 light_specular(1.0f, 1.0f, 1.0f);
+// Blue light
+glm::vec3 light_pos_b(-5.0f, 0.0f, 1.0f);
+glm::vec3 light_ambient_b(0.1f, 0.1f, 0.2f);
+glm::vec3 light_diffuse_b(0.1f, 0.1f, 0.5f);
+glm::vec3 light_specular_b(0.0f, 0.0f, 1.0f);
+
+// Red light
+glm::vec3 light_pos_r(5.0f, 0.0f, 1.0f);
+glm::vec3 light_ambient_r(0.2f, 0.1f, 0.1f);
+glm::vec3 light_diffuse_r(0.5f, 0.1f, 0.1f);
+glm::vec3 light_specular_r(1.0f, 0.0f, 0.0f);
 
 // Material
-glm::vec3 material_ambient(1.0f, 0.5f, 0.31f);
-glm::vec3 material_diffuse(1.0f, 0.5f, 0.31f);
-glm::vec3 material_specular(0.5f, 0.5f, 0.5f);
+glm::vec3 material_ambient(0.8f, 0.8f, 0.8f);
+glm::vec3 material_diffuse(1.0f, 1.0f, 1.0f);
+glm::vec3 material_specular(0.7f, 0.7f, 0.7f);
 const GLfloat material_shininess = 32.0f;
 
 int main()
@@ -267,10 +274,15 @@ int main()
 
   camera_position_location = glGetUniformLocation(shader_program, "view_pos");
 
-  light_ambient_location = glGetUniformLocation(shader_program, "light.ambient");
-  light_diffuse_location = glGetUniformLocation(shader_program, "light.diffuse");
-  light_specular_location = glGetUniformLocation(shader_program, "light.specular");
-  light_position_location = glGetUniformLocation(shader_program, "light.position");
+  light_ambient_location_b = glGetUniformLocation(shader_program, "light1.ambient");
+  light_diffuse_location_b = glGetUniformLocation(shader_program, "light1.diffuse");
+  light_specular_location_b = glGetUniformLocation(shader_program, "light1.specular");
+  light_position_location_b = glGetUniformLocation(shader_program, "light1.position");
+
+  light_ambient_location_r = glGetUniformLocation(shader_program, "light2.ambient");
+  light_diffuse_location_r = glGetUniformLocation(shader_program, "light2.diffuse");
+  light_specular_location_r = glGetUniformLocation(shader_program, "light2.specular");
+  light_position_location_r = glGetUniformLocation(shader_program, "light2.position");
 
   material_ambient_location = glGetUniformLocation(shader_program, "material.ambient");
   material_diffuse_location = glGetUniformLocation(shader_program, "material.diffuse");
@@ -343,10 +355,15 @@ void render(double currentTime)
 
   glUniform3fv(camera_position_location, 1, glm::value_ptr(camera_pos));
 
-  glUniform3fv(light_ambient_location, 1, glm::value_ptr(light_ambient));
-  glUniform3fv(light_diffuse_location, 1, glm::value_ptr(light_diffuse));
-  glUniform3fv(light_specular_location, 1, glm::value_ptr(light_specular));
-  glUniform3fv(light_position_location, 1, glm::value_ptr(light_pos));
+  glUniform3fv(light_ambient_location_b, 1, glm::value_ptr(light_ambient_b));
+  glUniform3fv(light_diffuse_location_b, 1, glm::value_ptr(light_diffuse_b));
+  glUniform3fv(light_specular_location_b, 1, glm::value_ptr(light_specular_b));
+  glUniform3fv(light_position_location_b, 1, glm::value_ptr(light_pos_b));
+
+  glUniform3fv(light_ambient_location_r, 1, glm::value_ptr(light_ambient_r));
+  glUniform3fv(light_diffuse_location_r, 1, glm::value_ptr(light_diffuse_r));
+  glUniform3fv(light_specular_location_r, 1, glm::value_ptr(light_specular_r));
+  glUniform3fv(light_position_location_r, 1, glm::value_ptr(light_pos_r));
 
   glUniform3fv(material_ambient_location, 1, glm::value_ptr(material_ambient));
   glUniform3fv(material_diffuse_location, 1, glm::value_ptr(material_diffuse));
