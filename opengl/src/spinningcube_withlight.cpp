@@ -237,9 +237,9 @@ int main()
       0.85f, -0.15f, -0.15f, -0.87f, 0.22f, -0.44f, 0.0f, 0.0f, // Bottom-front vertex
       0.45f, -0.15f, 0.65f, -0.87f, 0.22f, -0.44f, 1.0f, 0.0f,  // Bottom-left vertex
 
-      0.85f, -0.15f, -0.15f, 0.0f, -1.0f, 0.0f, 0.5f, 0.0f, // Bottom-front vertex
-      1.25f, -0.15f, 0.65f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,  // Bottom-right vertex
-      0.45f, -0.15f, 0.65f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f   // Bottom-left vertex
+      0.85f, -0.15f, -0.15f, 0.0f, -1.0f, 0.0f, 0.25f, 0.5f, // Bottom-front vertex
+      1.25f, -0.15f, 0.65f, 0.0f, -1.0f, 0.0f, 0.75f, 0.5f,  // Bottom-right vertex
+      0.45f, -0.15f, 0.65f, 0.0f, -1.0f, 0.0f, 0.5f, 0.0f    // Bottom-left vertex
   };
 
   // Vertex Buffer Object (for vertex coordinates)
