@@ -61,6 +61,7 @@ const GLfloat material_shininess = 32.0f;
 
 // Textures
 unsigned int diffuse_map;
+unsigned int specular_map;
 
 int main()
 {
@@ -298,6 +299,7 @@ int main()
   material_shininess_location = glGetUniformLocation(shader_program, "material.shininess");
 
   diffuse_map = loadTexture("assets/diffuse_map.png");
+  specular_map = loadTexture("assets/specular_map.png");
 
   // Render loop
   while (!glfwWindowShouldClose(window))
@@ -379,9 +381,13 @@ void render(double currentTime)
   glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
   glUniform1f(material_shininess_location, material_shininess);
 
-  // Bind difusse map
+  // Bind diffuse map
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, diffuse_map);
+
+  // Bind specular map
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, specular_map);
 
   // Render the cube
   glDrawArrays(GL_TRIANGLES, 0, 36);

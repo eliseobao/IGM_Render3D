@@ -2,7 +2,7 @@
 
 struct Material {
   sampler2D diffuse;
-  vec3 specular;
+  sampler2D specular;
   float shininess;
 };
 
@@ -52,8 +52,8 @@ void main() {
   float spec1 = pow(max(dot(view_dir, reflect_dir1), 0.0), material.shininess);
   float spec2 = pow(max(dot(view_dir, reflect_dir2), 0.0), material.shininess);
 
-  vec3 specular1 = light1.specular * spec1 * material.specular;
-  vec3 specular2 = light2.specular * spec2 * material.specular;
+  vec3 specular1 = light1.specular * spec1 * vec3(texture(material.specular, tex_coords));
+  vec3 specular2 = light2.specular * spec2 * vec3(texture(material.specular, tex_coords));
 
   vec3 specular = specular1 + specular2;
 
