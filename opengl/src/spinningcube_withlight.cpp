@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-
+#define STB_IMAGE_IMPLEMENTATION
 // GLM library to deal with matrix operations
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>               // glm::mat4
@@ -14,12 +14,14 @@
 #include "glm/ext.hpp" // glm::inverseTranspose
 
 #include "textfile_ALT.h"
+#include "stb_image.h"
 
 int gl_width = 640;
 int gl_height = 480;
 
 void glfw_window_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
+unsigned int loadTexture(const char *path);
 void render(double);
 
 GLuint shader_program = 0; // shader program to set render pipeline
@@ -28,7 +30,7 @@ GLuint vao = 0;
 // Uniforms for transformation matrices                                                                                                                                                                                                       // Vertext Array Object to set input data
 GLint model_location, view_location, proj_location, normal_to_w_location;
 GLint camera_position_location;
-GLint material_ambient_location, material_diffuse_location, material_specular_location, material_shininess_location;
+GLint material_diffuse_location, material_specular_location, material_shininess_location;
 GLint light_position_location_b, light_ambient_location_b, light_diffuse_location_b, light_specular_location_b;
 GLint light_position_location_r, light_ambient_location_r, light_diffuse_location_r, light_specular_location_r;
 
@@ -56,6 +58,9 @@ glm::vec3 material_ambient(0.8f, 0.8f, 0.8f);
 glm::vec3 material_diffuse(1.0f, 1.0f, 1.0f);
 glm::vec3 material_specular(0.7f, 0.7f, 0.7f);
 const GLfloat material_shininess = 32.0f;
+
+// Textures
+unsigned int diffuse_map;
 
 int main()
 {
@@ -170,71 +175,71 @@ int main()
   // far ---> 1        2
   //       6        5
   //
+  // positions (0-2) + normals (3-5) + texture coords (6-7)
   const GLfloat vertex_positions[] = {
-      -0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f, // 1
-      -0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f,  // 0
-      0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f,  // 2
+      -0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // 1
+      -0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,  // 0
+      0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,  // 2
 
-      0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f,  // 3
-      0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f, // 2
-      -0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f, // 0
+      0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,  // 3
+      0.25f, -0.25f, -0.25f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // 2
+      -0.25f, 0.25f, -0.25f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // 0
 
-      0.25f, -0.25f, -0.25f, 1.0f, 0.0f, 0.0f, // 2
-      0.25f, 0.25f, -0.25f, 1.0f, 0.0f, 0.0f,  // 3
-      0.25f, -0.25f, 0.25f, 1.0f, 0.0f, 0.0f,  // 5
+      0.25f, -0.25f, -0.25f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 2
+      0.25f, 0.25f, -0.25f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // 3
+      0.25f, -0.25f, 0.25f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  // 5
 
-      0.25f, 0.25f, 0.25f, 1.0f, 0.0f, 0.0f,  // 4
-      0.25f, -0.25f, 0.25f, 1.0f, 0.0f, 0.0f, // 5
-      0.25f, 0.25f, -0.25f, 1.0f, 0.0f, 0.0f, // 3
+      0.25f, 0.25f, 0.25f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,  // 4
+      0.25f, -0.25f, 0.25f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 5
+      0.25f, 0.25f, -0.25f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 3
 
-      0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f,  // 5
-      0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f,   // 4
-      -0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f, // 6
+      0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // 5
+      0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,   // 4
+      -0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // 6
 
-      -0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f,  // 7
-      -0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f, // 6
-      0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f,   // 4
+      -0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  // 7
+      -0.25f, -0.25f, 0.25f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // 6
+      0.25f, 0.25f, 0.25f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,   // 4
 
-      -0.25f, -0.25f, 0.25f, -1.0f, 0.0f, 0.0f,  // 6
-      -0.25f, 0.25f, 0.25f, -1.0f, 0.0f, 0.0f,   // 7
-      -0.25f, -0.25f, -0.25f, -1.0f, 0.0f, 0.0f, // 1
+      -0.25f, -0.25f, 0.25f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // 6
+      -0.25f, 0.25f, 0.25f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,   // 7
+      -0.25f, -0.25f, -0.25f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 1
 
-      -0.25f, 0.25f, -0.25f, -1.0f, 0.0f, 0.0f,  // 0
-      -0.25f, -0.25f, -0.25f, -1.0f, 0.0f, 0.0f, // 1
-      -0.25f, 0.25f, 0.25f, -1.0f, 0.0f, 0.0f,   // 7
+      -0.25f, 0.25f, -0.25f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,  // 0
+      -0.25f, -0.25f, -0.25f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 1
+      -0.25f, 0.25f, 0.25f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,   // 7
 
-      0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f,  // 2
-      0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f,   // 5
-      -0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f, // 1
+      0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // 2
+      0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,   // 5
+      -0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // 1
 
-      -0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f,  // 6
-      -0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f, // 1
-      0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f,   // 5
+      -0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,  // 6
+      -0.25f, -0.25f, -0.25f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // 1
+      0.25f, -0.25f, 0.25f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,   // 5
 
-      0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f,  // 4
-      0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, // 3
-      -0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f, // 7
+      0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,  // 4
+      0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 3
+      -0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // 7
 
-      -0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, // 0
-      -0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f,  // 7
-      0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f,  // 3
+      -0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // 0
+      -0.25f, 0.25f, 0.25f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 7
+      0.25f, 0.25f, -0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // 3
 
-      // Pyramid
-      0.85f,  0.65f,  0.25f, 0.0f, 0.45f, 0.89f, // Top vertex
-      0.45f, -0.15f,  0.65f, 0.0f, 0.45f, 0.89f, // Bottom-left vertex
-      1.25f, -0.15f,  0.65f, 0.0f, 0.45f, 0.89f, // Bottom-right vertex
+      0.85f, 0.65f, 0.25f, 0.0f, 0.45f, 0.89f, 0.5f, 1.0f,  // Top vertex
+      0.45f, -0.15f, 0.65f, 0.0f, 0.45f, 0.89f, 0.0f, 0.0f, // Bottom-left vertex
+      1.25f, -0.15f, 0.65f, 0.0f, 0.45f, 0.89f, 1.0f, 0.0f, // Bottom-right vertex
 
-      0.85f,  0.65f,  0.25f, 0.87f, 0.22f, -0.44f, // Top vertex
-      1.25f, -0.15f,  0.65f, 0.87f, 0.22f, -0.44f, // Bottom-right vertex
-      0.85f, -0.15f, -0.15f, 0.87f, 0.22f, -0.44f, // Bottom-front vertex
+      0.85f, 0.65f, 0.25f, 0.87f, 0.22f, -0.44f, 0.5f, 1.0f,   // Top vertex
+      1.25f, -0.15f, 0.65f, 0.87f, 0.22f, -0.44f, 1.0f, 0.0f,  // Bottom-right vertex
+      0.85f, -0.15f, -0.15f, 0.87f, 0.22f, -0.44f, 0.0f, 0.0f, // Bottom-front vertex
 
-      0.85f,  0.65f,  0.25f, -0.87f, 0.22f, -0.44f, // Top vertex
-      0.85f, -0.15f, -0.15f, -0.87f, 0.22f, -0.44f, // Bottom-front vertex
-      0.45f, -0.15f,  0.65f, -0.87f, 0.22f, -0.44f, // Bottom-left vertex
+      0.85f, 0.65f, 0.25f, -0.87f, 0.22f, -0.44f, 0.5f, 1.0f,   // Top vertex
+      0.85f, -0.15f, -0.15f, -0.87f, 0.22f, -0.44f, 0.0f, 0.0f, // Bottom-front vertex
+      0.45f, -0.15f, 0.65f, -0.87f, 0.22f, -0.44f, 1.0f, 0.0f,  // Bottom-left vertex
 
-      0.85f, -0.15f, -0.15f, 0.0f, -1.0f, 0.0f, // Bottom-front vertex
-      1.25f, -0.15f,  0.65f, 0.0f, -1.0f, 0.0f, // Bottom-right vertex
-      0.45f, -0.15f,  0.65f, 0.0f, -1.0f, 0.0f,  // Bottom-left vertex
+      0.85f, -0.15f, -0.15f, 0.0f, -1.0f, 0.0f, 0.5f, 0.0f, // Bottom-front vertex
+      1.25f, -0.15f, 0.65f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,  // Bottom-right vertex
+      0.45f, -0.15f, 0.65f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f   // Bottom-left vertex
   };
 
   // Vertex Buffer Object (for vertex coordinates)
@@ -245,12 +250,16 @@ int main()
 
   // Vertex attributes
   // 0: vertex position (x, y, z)
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,  6 * sizeof(float), NULL);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), NULL);
   glEnableVertexAttribArray(0);
 
   // 1: vertex normals (x, y, z)
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,  6 * sizeof(float), (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
+
+  // 2: texture
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
 
   // Unbind vbo (it was conveniently registered by VertexAttribPointer)
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -284,10 +293,11 @@ int main()
   light_specular_location_r = glGetUniformLocation(shader_program, "light2.specular");
   light_position_location_r = glGetUniformLocation(shader_program, "light2.position");
 
-  material_ambient_location = glGetUniformLocation(shader_program, "material.ambient");
   material_diffuse_location = glGetUniformLocation(shader_program, "material.diffuse");
   material_specular_location = glGetUniformLocation(shader_program, "material.specular");
   material_shininess_location = glGetUniformLocation(shader_program, "material.shininess");
+
+  diffuse_map = loadTexture("assets/diffuse_map.png");
 
   // Render loop
   while (!glfwWindowShouldClose(window))
@@ -365,16 +375,20 @@ void render(double currentTime)
   glUniform3fv(light_specular_location_r, 1, glm::value_ptr(light_specular_r));
   glUniform3fv(light_position_location_r, 1, glm::value_ptr(light_pos_r));
 
-  glUniform3fv(material_ambient_location, 1, glm::value_ptr(material_ambient));
   glUniform3fv(material_diffuse_location, 1, glm::value_ptr(material_diffuse));
   glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
   glUniform1f(material_shininess_location, material_shininess);
+
+  // Bind difusse map
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, diffuse_map);
 
   // Render the cube
   glDrawArrays(GL_TRIANGLES, 0, 36);
 
   // Render the pyramid
-  glDrawArrays(GL_TRIANGLES, 36, 12);}
+  glDrawArrays(GL_TRIANGLES, 36, 12);
+}
 
 void processInput(GLFWwindow *window)
 {
@@ -388,4 +402,43 @@ void glfw_window_size_callback(GLFWwindow *window, int width, int height)
   gl_width = width;
   gl_height = height;
   printf("New viewport: (width: %d, height: %d)\n", width, height);
+}
+
+// utility function for loading a 2D texture from file
+// ---------------------------------------------------
+unsigned int loadTexture(char const *path)
+{
+  unsigned int textureID;
+  glGenTextures(1, &textureID);
+
+  int width, height, nrComponents;
+  unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+  if (data)
+  {
+    GLenum format;
+    if (nrComponents == 1)
+      format = GL_RED;
+    else if (nrComponents == 3)
+      format = GL_RGB;
+    else if (nrComponents == 4)
+      format = GL_RGBA;
+
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+  }
+  else
+  {
+    printf("Texture failed to load at path: %s\n", path);
+    stbi_image_free(data);
+  }
+
+  return textureID;
 }
